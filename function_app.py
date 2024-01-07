@@ -1,4 +1,5 @@
 import azure.functions as func
+from azure.functions import BlobServiceClient
 import logging
 import img2pdf
 
@@ -25,12 +26,17 @@ def first_http_trigger_test(req: func.HttpRequest) -> func.HttpResponse:
              status_code=200
         )
     
-def convert_img_to_pdf(infile,outfile):
-    """Convert image to pdf. img2pdf requires a file as input."""
+# def convert_img_to_pdf(infile,outfile):
+#     """Convert image to pdf. img2pdf requires a file as input."""
     
-    pdf_bytes = img2pdf.convert(infile)
-    with open(outfile, 'wb') as file:
-        file.write(pdf_bytes)
+#     pdf_bytes = img2pdf.convert(infile)
+#     with open(outfile, 'wb') as file:
+#         file.write(pdf_bytes)
+
+# def upload_blob_file(self, blob_service_client: BlobServiceClient, container_name: str):
+#     container_client = blob_service_client.get_container_client(container=container_name)
+#     with open(file=os.path.join('filepath', 'filename'), mode="rb") as data:
+#         blob_client = container_client.upload_blob(name="sample-blob.txt", data=data, overwrite=True)
 
 @app.route(route='tiff2pdf')
 def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
@@ -55,14 +61,18 @@ def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
     else:
+        
         with open('imagefile.tif','wb') as f:
             f.write(req_body)
+            pdf_bytes = img2pdf.convert(f)
+            return func.HttpResponse(body=pdf_bytes, status_code=200)
         
-        convert_img_to_pdf('imagefile.tif','imagefile.pdf')
-        # need to then send this to blob
-        return func.HttpResponse(
-                "This HTTP triggered function executed successfully.",
-                status_code=200
-            )
+        #convert_img_to_pdf('imagefile.tif','imagefile.pdf')
+        # with open('imagefile.pdf','rb') as f:
+        #     img = f.read()
+        #     return func.HttpResponse(body=
+        #             "This HTTP triggered function executed successfully.",
+        #             status_code=200
+        #         )
 
     
