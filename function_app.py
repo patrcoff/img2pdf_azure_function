@@ -2,7 +2,7 @@ import azure.functions as func
 #from azure.functions import BlobServiceClient
 import logging
 import img2pdf
-import tempfile
+import base64
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
@@ -48,7 +48,7 @@ def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
 #    requests.post(url,data=img)
     
     try:
-        req_body = req.get_body()
+        req_body = req.get_json()
 
     except ValueError:
         logging.ERROR('Received request to \'tiff2pdf\' without request body!')
@@ -62,15 +62,17 @@ def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
             f'Something went wrong: \n{exc}',
             status_code=500
         )
-    else:
-        tempFilePath = tempfile.gettempdir() # needed to enable temporary files in functions runtime
+    #else:
+    #    img_content = req_body
+        #tempFilePath = tempfile.gettempdir() # needed to enable temporary files in functions runtime
         # note, writing files normally works in local dev but not in functions runtime
-        fp = tempfile.NamedTemporaryFile()
-        with open(fp,'wb') as f:
-            f.write(req_body)
-        
-        pdf_bytes = img2pdf.convert(fp)
-        return func.HttpResponse(body=pdf_bytes, status_code=200)
+        #fp = tempfile.NamedTemporaryFile()
+        #with open(fp,'wb') as f:
+        #fp = Path(tempFilePath) / 'imagefile'
+        #    f.write(req_body)
+    
+    pdf_bytes = img2pdf.convert(base64.b64decode(req_body.get('ContentBytes')))
+    return func.HttpResponse(body=base64.b64encode(pdf_bytes), status_code=200)
         
         #convert_img_to_pdf('imagefile.tif','imagefile.pdf')
         # with open('imagefile.pdf','rb') as f:
