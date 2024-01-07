@@ -1,5 +1,5 @@
 import azure.functions as func
-from azure.functions import BlobServiceClient
+#from azure.functions import BlobServiceClient
 import logging
 import img2pdf
 
@@ -38,6 +38,7 @@ def first_http_trigger_test(req: func.HttpRequest) -> func.HttpResponse:
 #     with open(file=os.path.join('filepath', 'filename'), mode="rb") as data:
 #         blob_client = container_client.upload_blob(name="sample-blob.txt", data=data, overwrite=True)
 
+@app.function_name(name="tif2pdf")
 @app.route(route='tiff2pdf')
 def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
 # expects a request as below:
