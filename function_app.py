@@ -2,6 +2,7 @@ import azure.functions as func
 #from azure.functions import BlobServiceClient
 import logging
 import img2pdf
+import tempfile
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
@@ -62,11 +63,14 @@ def convert_tiff2pdf(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
     else:
-        
-        with open('imagefile.tif','wb') as f:
+        tempFilePath = tempfile.gettempdir() # needed to enable temporary files in functions runtime
+        # note, writing files normally works in local dev but not in functions runtime
+        fp = tempfile.NamedTemporaryFile()
+        with open(fp,'wb') as f:
             f.write(req_body)
-            pdf_bytes = img2pdf.convert(f)
-            return func.HttpResponse(body=pdf_bytes, status_code=200)
+        
+        pdf_bytes = img2pdf.convert(fp)
+        return func.HttpResponse(body=pdf_bytes, status_code=200)
         
         #convert_img_to_pdf('imagefile.tif','imagefile.pdf')
         # with open('imagefile.pdf','rb') as f:
